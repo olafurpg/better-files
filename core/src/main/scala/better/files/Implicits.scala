@@ -271,4 +271,7 @@ trait Implicits {
 
   private[files] implicit def pathStreamToFiles(files: JStream[Path]): Files =
     files.toAutoClosedIterator.map(File.apply)
+
+
+
 }
