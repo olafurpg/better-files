@@ -196,6 +196,39 @@ class FileSpec extends DottyTests {
   }
 
   ignore("it should do basic I/O") {
+    // This test is ignore because:
+//    [error] (run-main-2b) java.lang.NoClassDefFoundError: scala/<repeated>
+//        java.lang.NoClassDefFoundError: scala/<repeated>
+//        at better.files.FileSpec.$anonfun$$init$$22(FileSpec.scala:207)
+//        at better.files.FileSpec$$Lambda$6723/1111789161.apply$mcV$sp(Unknown Source)
+//        at scala.compat.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:12)
+//        at better.files.DottyTests$Test.apply(FileSpec.scala:63)
+//        at better.files.FileSpec.<init>(FileSpec.scala:217)
+//        at better.files.Main$.main(FileSpec.scala:582)
+//        at better.files.Main.main(FileSpec.scala)
+//        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+//        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+//        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+//        at java.lang.reflect.Method.invoke(Method.java:483)
+//        Caused by: java.lang.ClassNotFoundException: scala.<repeated>
+//        at java.net.URLClassLoader$1.run(URLClassLoader.java:372)
+//        at java.net.URLClassLoader$1.run(URLClassLoader.java:361)
+//        at java.security.AccessController.doPrivileged(Native Method)
+//        at java.net.URLClassLoader.findClass(URLClassLoader.java:360)
+//        at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+//        at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+//        at better.files.FileSpec.$anonfun$$init$$22(FileSpec.scala:207)
+//        at better.files.FileSpec$$Lambda$6723/1111789161.apply$mcV$sp(Unknown Source)
+//        at scala.compat.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:12)
+//        at better.files.DottyTests$Test.apply(FileSpec.scala:63)
+//        at better.files.FileSpec.<init>(FileSpec.scala:217)
+//        at better.files.Main$.main(FileSpec.scala:582)
+//        at better.files.Main.main(FileSpec.scala)
+//        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+//        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+//        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+//        at java.lang.reflect.Method.invoke(Method.java:483)
+//        [trace] Stack trace suppressed: run last test:run for the full output.
     t1 < "hello"
     t1.contentAsString shouldEqual "hello"
     t1.appendLine()(OpenOptions.append, implicitly[Codec]) << "world"
