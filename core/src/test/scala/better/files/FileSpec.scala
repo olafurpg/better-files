@@ -463,6 +463,9 @@ class FileSpec extends Tests {
     } yield scanner.next[(Long, Boolean)]
     data shouldBe Seq(10L -> false)
   }
+  sealed trait Animal
+  case class Dog(name: String) extends Animal
+  case class Cat(name: String) extends Animal
 
   test("it should parse custom parsers") {
     val file = t1 < """
@@ -470,9 +473,6 @@ class FileSpec extends Tests {
       |Woofer
     """.stripMargin
 
-    sealed trait Animal
-    case class Dog(name: String) extends Animal
-    case class Cat(name: String) extends Animal
 
     implicit val animalParser: Scannable[Animal] = Scannable {scanner =>
       val name = scanner.next[String]
