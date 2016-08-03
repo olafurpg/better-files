@@ -72,6 +72,15 @@ class DottyTests {
     if (!cond) fail(msg)
   }
 
+  def expect[T](handleError: PartialFunction[Throwable, Unit])(body: => T): Unit = {
+    try {
+      body
+      throw FailedTestException("expected error but no error happened")
+    } catch handleError
+  }
+
+
+
   def test(name: String) = Test(name)
   def ignore(name: String) = Test(name, ignore = true)
 

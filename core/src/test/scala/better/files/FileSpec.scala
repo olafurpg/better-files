@@ -295,9 +295,13 @@ class FileSpec extends DottyTests {
   test("it should support chown/chgrp") {
     assert(fa.ownerName.nonEmpty)
     assert(fa.groupName.nonEmpty)
-//    a[java.nio.file.attribute.UserPrincipalNotFoundException] should be thrownBy chown("hitler", fa)
-//    a[java.nio.file.attribute.UserPrincipalNotFoundException] should be thrownBy chgrp("cool", fa)
-//    stat(t1) shouldBe a[java.nio.file.attribute.PosixFileAttributes]
+    expect({ case e: java.nio.file.attribute.UserPrincipalNotFoundException => }) {
+      chown("hitler", fa)
+    }
+    expect({ case e: java.nio.file.attribute.UserPrincipalNotFoundException => }) {
+      chgrp("cool", fa)
+    }
+    assert(stat(t1).isInstanceOf[java.nio.file.attribute.PosixFileAttributes])
   }
 
   test("it should detect file locks") {
@@ -323,7 +327,10 @@ class FileSpec extends DottyTests {
     // copy
     assert(b2.contentAsString.isEmpty)
     assert(t1.md5 != t2.md5)
-//    a[java.nio.file.FileAlreadyExistsException] should be thrownBy (t1 copyTo t2)
+
+    expect({ case e: java.nio.file.FileAlreadyExistsException => }) {
+      t1.copyTo(t2)
+    }
     t1.copyTo(t2, overwrite = true)
     t1.exists shouldBe true
     t1.md5 shouldEqual t2.md5
@@ -463,8 +470,12 @@ class FileSpec extends DottyTests {
     assert(scanner.next[String] == "Ok")
     assert(scanner.tillEndOfLine() == " 23 football")
     assert(!scanner.hasNext)
-//    a[NoSuchElementException] should be thrownBy scanner.tillEndOfLine()
-//    a[NoSuchElementException] should be thrownBy scanner.next()
+    expect({ case e: NoSuchElementException => }) {
+      scanner.tillEndOfLine()
+    }
+    expect({ case e: NoSuchElementException => }) {
+      scanner.next()
+    }
     assert(!scanner.hasNext)
     data.lineIterator.toSeq.filterNot(_.trim.isEmpty) shouldEqual data.newScanner.nonEmptyLines.toSeq
     data.tokens shouldEqual data.newScanner().toTraversable
