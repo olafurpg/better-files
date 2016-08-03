@@ -840,7 +840,8 @@ class File private (val path: Path) {
   def unzipTo(destination: File)(implicit codec: Codec): destination.type = {
     for {
       zipFile <- new ZipFile(toJava, codec).autoClosed
-      entry <- zipFile.entries()
+      entry <- enumerationAsScalaIterator(
+        zipFile.entries().asInstanceOf[java.util.Enumeration[java.util.zip.ZipEntry]])
       file = destination.createChild(entry.getName, entry.isDirectory)
       if !entry.isDirectory
     } zipFile.getInputStream(entry) > file.newOutputStream
