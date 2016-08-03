@@ -64,11 +64,11 @@ class FileSpec extends DottyTests {
   override def afterEach() = rm(testRoot)
 
   override def withFixture(test: Test) = {
-//    TODO
-//    val before = File.numberOfOpenFileDescriptors()
-//    val after = File.numberOfOpenFileDescriptors()
-//    assert(before == after, s"Resource leakage detected in ${test.name}")
-    Unit
+    val before = File.numberOfOpenFileDescriptors()
+    val result = super.withFixture(test)
+    val after = File.numberOfOpenFileDescriptors()
+    assert(before == after, s"Resource leakage detected in ${test.name}")
+    result
   }
 
   test("files can be instantiated") {

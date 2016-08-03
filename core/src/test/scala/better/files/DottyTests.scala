@@ -10,7 +10,7 @@ class DottyTests {
 
   def printResults(): Unit = {
     val toRun = testsBuilder.result()
-    val results = toRun.map(_.run)
+    val results = toRun.map(withFixture)
     results.foreach(_.print())
     val counts = results.groupBy(_.getClass)
     println("========================")
@@ -95,7 +95,7 @@ class DottyTests {
 
   def beforeEach(): Unit = Unit
   def afterEach(): Unit = Unit
-  def withFixture(test: Test): Unit = Unit
+  def withFixture(test: Test): TestResult = test.run
 
   def fail(msg: String = "") = throw FailedTestException(msg)
 }
