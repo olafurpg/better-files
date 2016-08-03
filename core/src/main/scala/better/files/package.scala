@@ -79,6 +79,7 @@ package object files extends Implicits {
 //  }
 
 
+  // TODO(olafur): Contrain A to Closeable
   type ManagedResource[A] = Traversable[A]
 
   // Some utils:
