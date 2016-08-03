@@ -18,9 +18,10 @@ object Cmds {
 
   val `..`: File => File = _.parent
 
-  val  `.`: File => File = identity
+  val `.`: File => File = identity
 
   implicit class FileDsl(file: File) {
+
     /**
       * Allows navigation up e.g. file / .. / ..
       *
@@ -75,19 +76,25 @@ object Cmds {
     * @param file
     * @return file
     */
-  def chmod(permissions: String, file: File): File = file.setPermissions(PosixFilePermissions.fromString(permissions).toSet)
+  def chmod(permissions: String, file: File): File =
+    file.setPermissions(PosixFilePermissions.fromString(permissions).toSet)
 
   def chmod_+(permission: PosixFilePermission, file: File): File = file.addPermission(permission)
 
-  def chmod_-(permission: PosixFilePermission, file: File): File = file.removePermission(permission)
+  def chmod_-(permission: PosixFilePermission, file: File): File =
+    file.removePermission(permission)
 
   def stat(file: File): PosixFileAttributes = file.posixAttributes
 
-  def unzip(zipFile: File)(destination: File)(implicit codec: Codec): File = zipFile.unzipTo(destination)(codec)
+  def unzip(zipFile: File)(destination: File)(implicit codec: Codec): File =
+    zipFile.unzipTo(destination)(codec)
 
-  def zip(files: File*)(destination: File, compressionLevel: Int = Deflater.DEFAULT_COMPRESSION)(implicit codec: Codec): File = {
+  def zip(files: File*)(destination: File, compressionLevel: Int = Deflater.DEFAULT_COMPRESSION)(
+      implicit codec: Codec): File = {
     for {
-      output <- new ZipOutputStream(destination.newOutputStream, codec).withCompressionLevel(compressionLevel).autoClosed
+      output <- new ZipOutputStream(destination.newOutputStream, codec)
+                 .withCompressionLevel(compressionLevel)
+                 .autoClosed
       input <- files
       file <- input.walk()
       name = input.parent relativize file

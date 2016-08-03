@@ -46,13 +46,17 @@ trait Implicits {
     def >(out: OutputStream): Unit =
       pipeTo(out)
 
-    def pipeTo(out: OutputStream, closeOutputStream: Boolean = true, bufferSize: Int = 1 << 10): Unit =
+    def pipeTo(out: OutputStream,
+               closeOutputStream: Boolean = true,
+               bufferSize: Int = 1 << 10): Unit =
       pipeTo(out, closeOutputStream, Array.ofDim[Byte](bufferSize))
 
     /**
       * Pipe an input stream to an output stream using a byte buffer
       */
-    @tailrec final def pipeTo(out: OutputStream, closeOutputStream: Boolean, buffer: Array[Byte]): Unit = {
+    @tailrec final def pipeTo(out: OutputStream,
+                              closeOutputStream: Boolean,
+                              buffer: Array[Byte]): Unit = {
       in.read(buffer) match {
         case n if n > 0 =>
           out.write(buffer, 0, n)
@@ -96,7 +100,9 @@ trait Implicits {
       new PrintWriter(out, autoFlush)
 
     def write(bytes: Iterator[Byte], bufferSize: Int = 1 << 10): out.type = {
-      bytes grouped bufferSize foreach { buffer => out.write(buffer.toArray) }
+      bytes grouped bufferSize foreach { buffer =>
+        out.write(buffer.toArray)
+      }
       out.flush()
       out
     }
@@ -112,7 +118,10 @@ trait Implicits {
       reader.autoClosedIterator(_.read())(_ != eof).map(_.toChar)
 
     private[files] def tokenizers(implicit config: Scanner.Config = Scanner.Config.default) =
-      reader.lines().toAutoClosedIterator.map(line => new StringTokenizer(line, config.delimiter, config.includeDelimiters))
+      reader
+        .lines()
+        .toAutoClosedIterator
+        .map(line => new StringTokenizer(line, config.delimiter, config.includeDelimiters))
 
     def tokens(implicit config: Scanner.Config = Scanner.Config.default): Iterator[String] =
       tokenizers(config).flatMap(tokenizerToIterator)
@@ -162,6 +171,7 @@ trait Implicits {
   }
 
   implicit class CloseableOps[A <: Closeable](resource: A) {
+
     /**
       * Lightweight automatic resource management
       * Closes the resource when done e.g.
@@ -176,14 +186,15 @@ trait Implicits {
       */
     def autoClosed: ManagedResource[A] = new Traversable[A] {
       var isClosed = false
-      override def foreach[U](f: A => U) = try {
-        f(resource)
-      } finally {
-        if (!isClosed) {
-          resource.close()
-          isClosed = true
+      override def foreach[U](f: A => U) =
+        try {
+          f(resource)
+        } finally {
+          if (!isClosed) {
+            resource.close()
+            isClosed = true
+          }
         }
-      }
     }
 
     /**
@@ -206,25 +217,28 @@ trait Implicits {
         !isClosed
       }
 
-      def close() = try {
-        if (!isClosed) resource.close()
-      } finally {
-        isClosed = true
-      }
+      def close() =
+        try {
+          if (!isClosed) resource.close()
+        } finally {
+          isClosed = true
+        }
 
-      def next() = try {
-        generator(resource)
-      } catch {
-        case NonFatal(e) =>
-          close()
-          throw e
-      }
+      def next() =
+        try {
+          generator(resource)
+        } catch {
+          case NonFatal(e) =>
+            close()
+            throw e
+        }
 
       Iterator.continually(next()).takeWhile(isOpen)
     }
   }
 
   implicit class JStreamOps[A](stream: JStream[A]) {
+
     /**
       * Closes this stream when iteration is complete
       * It will NOT close the stream if it is not depleted!

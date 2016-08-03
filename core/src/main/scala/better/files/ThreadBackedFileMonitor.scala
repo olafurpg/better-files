@@ -22,7 +22,8 @@ abstract class ThreadBackedFileMonitor(val root: File, maxDepth: Int) extends Fi
   def this(root: File, recursive: Boolean = true) = this(root, if (recursive) Int.MaxValue else 0)
 
   protected[this] def process(key: WatchKey) = {
-    def reactTo(target: File) = root.isDirectory || (root isSamePathAs target) // if watching non-directory, don't react to siblings
+    def reactTo(target: File) =
+      root.isDirectory || (root isSamePathAs target) // if watching non-directory, don't react to siblings
 
     val path = key.watchable().asInstanceOf[Path]
 
@@ -48,7 +49,8 @@ abstract class ThreadBackedFileMonitor(val root: File, maxDepth: Int) extends Fi
         f <- file.walk(depth) if f.isDirectory && f.exists
       } f.register(service)
     } else if (file.exists) {
-      file.parent.register(service) // There is no way to watch a regular file; so watch its parent instead
+      file.parent
+        .register(service) // There is no way to watch a regular file; so watch its parent instead
     }
   }
 

@@ -16,7 +16,7 @@ import scala.util.Properties
 /**
   * Scala wrapper around java.nio.files.Path
   */
-class File private(val path: Path) {
+class File private (val path: Path) {
   //TODO: LinkOption?
 
   def pathAsString: String =
@@ -60,7 +60,9 @@ class File private(val path: Path) {
     * @param toLowerCase to lowercase the extension or not e.g. foo.HTML should have .html or .HTML
     * @return extension of this file if it is a regular file and has an extension, else None
     */
-  def extension(includeDot: Boolean = true, includeAll: Boolean = false, toLowerCase: Boolean = true): Option[String] = {
+  def extension(includeDot: Boolean = true,
+                includeAll: Boolean = false,
+                toLowerCase: Boolean = true): Option[String] = {
     when(hasExtension) {
       val dot = if (includeAll) name indexOf "." else name lastIndexOf "."
       val index = if (includeDot) dot else dot + 1
@@ -102,7 +104,9 @@ class File private(val path: Path) {
 
   def /(child: String): File = path resolve child
 
-  def createChild(child: String, asDirectory: Boolean = false)(implicit attributes: File.Attributes = File.Attributes.default, linkOptions: File.LinkOptions = File.LinkOptions.default): File =
+  def createChild(child: String, asDirectory: Boolean = false)(
+      implicit attributes: File.Attributes = File.Attributes.default,
+      linkOptions: File.LinkOptions = File.LinkOptions.default): File =
     (this / child).createIfNotExists(asDirectory)(attributes, linkOptions)
 
   /**
@@ -114,7 +118,9 @@ class File private(val path: Path) {
     * @param linkOptions
     * @return
     */
-  def createIfNotExists(asDirectory: Boolean = false, createParents: Boolean = false)(implicit attributes: File.Attributes = File.Attributes.default, linkOptions: File.LinkOptions = File.LinkOptions.default): this.type = {
+  def createIfNotExists(asDirectory: Boolean = false, createParents: Boolean = false)(
+      implicit attributes: File.Attributes = File.Attributes.default,
+      linkOptions: File.LinkOptions = File.LinkOptions.default): this.type = {
     if (exists(linkOptions)) {
       this
     } else if (asDirectory) {
@@ -165,12 +171,14 @@ class File private(val path: Path) {
   def byteArray: Array[Byte] =
     loadBytes
 
-  def createDirectory()(implicit attributes: File.Attributes = File.Attributes.default): this.type = {
+  def createDirectory()(
+      implicit attributes: File.Attributes = File.Attributes.default): this.type = {
     Files.createDirectory(path, attributes: _*)
     this
   }
 
-  def createDirectories()(implicit attributes: File.Attributes = File.Attributes.default): this.type = {
+  def createDirectories()(
+      implicit attributes: File.Attributes = File.Attributes.default): this.type = {
     Files.createDirectories(path, attributes: _*)
     this
   }
@@ -199,7 +207,8 @@ class File private(val path: Path) {
   def lineIterator(implicit codec: Codec): Iterator[String] =
     Files.lines(path, codec).toAutoClosedIterator
 
-  def tokens(implicit config: Scanner.Config = Scanner.Config.default, codec: Codec): Traversable[String] =
+  def tokens(implicit config: Scanner.Config = Scanner.Config.default,
+             codec: Codec): Traversable[String] =
     bufferedReader(codec).flatMap(_.tokens(config))
 
   def contentAsString(implicit codec: Codec): String =
@@ -208,7 +217,8 @@ class File private(val path: Path) {
   def `!`(implicit codec: Codec): String =
     contentAsString(codec)
 
-  def printLines(lines: Iterator[Any])(implicit openOptions: File.OpenOptions = File.OpenOptions.append): this.type = {
+  def printLines(lines: Iterator[Any])(implicit openOptions: File.OpenOptions =
+                                         File.OpenOptions.append): this.type = {
     for {
       pw <- printWriter()(openOptions)
       line <- lines
@@ -224,32 +234,41 @@ class File private(val path: Path) {
     * @param codec
     * @return
     */
-  def appendLines(lines: String*)(implicit openOptions: File.OpenOptions = File.OpenOptions.append, codec: Codec): this.type = {
+  def appendLines(lines: String*)(implicit openOptions: File.OpenOptions = File.OpenOptions.append,
+                                  codec: Codec): this.type = {
     Files.write(path, lines, codec, openOptions: _*)
     this
   }
 
-  def <<(line: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.append, codec: Codec): this.type =
+  def <<(line: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.append,
+                       codec: Codec): this.type =
     appendLines(line)(openOptions, codec)
 
-  def >>:(line: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.append, codec: Codec): this.type =
+  def >>:(line: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.append,
+                        codec: Codec): this.type =
     appendLines(line)(openOptions, codec)
 
-  def appendLine(line: String = "")(implicit openOptions: File.OpenOptions = File.OpenOptions.append, codec: Codec): this.type =
+  def appendLine(line: String = "")(implicit openOptions: File.OpenOptions =
+                                      File.OpenOptions.append,
+                                    codec: Codec): this.type =
     appendLines(line)(openOptions, codec)
 
-  def append(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.append, codec: Codec): this.type =
+  def append(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.append,
+                           codec: Codec): this.type =
     appendByteArray(text.getBytes(codec))(openOptions)
 
-  def appendText(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.append, codec: Codec): this.type =
+  def appendText(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.append,
+                               codec: Codec): this.type =
     append(text)(openOptions, codec)
 
-  def appendByteArray(bytes: Array[Byte])(implicit openOptions: File.OpenOptions = File.OpenOptions.append): this.type = {
+  def appendByteArray(bytes: Array[Byte])(implicit openOptions: File.OpenOptions =
+                                            File.OpenOptions.append): this.type = {
     Files.write(path, bytes, openOptions: _*)
     this
   }
 
-  def appendBytes(bytes: Iterator[Byte])(implicit openOptions: File.OpenOptions = File.OpenOptions.append): this.type =
+  def appendBytes(bytes: Iterator[Byte])(implicit openOptions: File.OpenOptions =
+                                           File.OpenOptions.append): this.type =
     writeBytes(bytes)(openOptions)
 
   /**
@@ -258,29 +277,36 @@ class File private(val path: Path) {
     * @param bytes
     * @return this
     */
-  def writeByteArray(bytes: Array[Byte])(implicit openOptions: File.OpenOptions = File.OpenOptions.default): this.type = {
+  def writeByteArray(bytes: Array[Byte])(implicit openOptions: File.OpenOptions =
+                                           File.OpenOptions.default): this.type = {
     Files.write(path, bytes, openOptions: _*)
     this
   }
 
-  def writeBytes(bytes: Iterator[Byte])(implicit openOptions: File.OpenOptions = File.OpenOptions.default): this.type = {
+  def writeBytes(bytes: Iterator[Byte])(implicit openOptions: File.OpenOptions =
+                                          File.OpenOptions.default): this.type = {
     outputStream(openOptions).foreach(_.buffered write bytes)
     this
   }
 
-  def write(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.default, codec: Codec): this.type =
+  def write(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.default,
+                          codec: Codec): this.type =
     writeByteArray(text.getBytes(codec))(openOptions)
 
-  def writeText(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.default, codec: Codec): this.type =
+  def writeText(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.default,
+                              codec: Codec): this.type =
     write(text)(openOptions, codec)
 
-  def overwrite(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.default, codec: Codec): this.type =
+  def overwrite(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.default,
+                              codec: Codec): this.type =
     write(text)(openOptions, codec)
 
-  def <(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.default, codec: Codec): this.type =
+  def <(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.default,
+                      codec: Codec): this.type =
     write(text)(openOptions, codec)
 
-  def `>:`(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.default, codec: Codec): this.type =
+  def `>:`(text: String)(implicit openOptions: File.OpenOptions = File.OpenOptions.default,
+                         codec: Codec): this.type =
     write(text)(openOptions, codec)
 
   def newBufferedSource(implicit codec: Codec): BufferedSource =
@@ -292,7 +318,8 @@ class File private(val path: Path) {
   def newRandomAccess(mode: File.RandomAccessMode = File.RandomAccessMode.read): RandomAccessFile =
     new RandomAccessFile(toJava, mode.value)
 
-  def randomAccess(mode: File.RandomAccessMode = File.RandomAccessMode.read): ManagedResource[RandomAccessFile] =
+  def randomAccess(mode: File.RandomAccessMode = File.RandomAccessMode.read)
+    : ManagedResource[RandomAccessFile] =
     newRandomAccess(mode).autoClosed //TODO: Mode enum?
 
   def newBufferedReader(implicit codec: Codec): BufferedReader =
@@ -301,10 +328,13 @@ class File private(val path: Path) {
   def bufferedReader(implicit codec: Codec): ManagedResource[BufferedReader] =
     newBufferedReader(codec).autoClosed
 
-  def newBufferedWriter(implicit codec: Codec, openOptions: File.OpenOptions = File.OpenOptions.default): BufferedWriter =
+  def newBufferedWriter(implicit codec: Codec,
+                        openOptions: File.OpenOptions = File.OpenOptions.default): BufferedWriter =
     Files.newBufferedWriter(path, codec, openOptions: _*)
 
-  def bufferedWriter(implicit codec: Codec, openOptions: File.OpenOptions = File.OpenOptions.default): ManagedResource[BufferedWriter] =
+  def bufferedWriter(
+      implicit codec: Codec,
+      openOptions: File.OpenOptions = File.OpenOptions.default): ManagedResource[BufferedWriter] =
     newBufferedWriter(codec, openOptions).autoClosed
 
   def newFileReader: FileReader =
@@ -319,16 +349,21 @@ class File private(val path: Path) {
   def fileWriter(append: Boolean = false): ManagedResource[FileWriter] =
     newFileWriter(append).autoClosed
 
-  def newPrintWriter(autoFlush: Boolean = false)(implicit openOptions: File.OpenOptions = File.OpenOptions.default): PrintWriter =
+  def newPrintWriter(autoFlush: Boolean = false)(implicit openOptions: File.OpenOptions =
+                                                   File.OpenOptions.default): PrintWriter =
     new PrintWriter(newOutputStream(openOptions), autoFlush)
 
-  def printWriter(autoFlush: Boolean = false)(implicit openOptions: File.OpenOptions = File.OpenOptions.default): ManagedResource[PrintWriter] =
+  def printWriter(autoFlush: Boolean = false)(implicit openOptions: File.OpenOptions =
+                                                File.OpenOptions.default)
+    : ManagedResource[PrintWriter] =
     newPrintWriter(autoFlush)(openOptions).autoClosed
 
-  def newInputStream(implicit openOptions: File.OpenOptions = File.OpenOptions.default): InputStream =
+  def newInputStream(
+      implicit openOptions: File.OpenOptions = File.OpenOptions.default): InputStream =
     Files.newInputStream(path, openOptions: _*)
 
-  def inputStream(implicit openOptions: File.OpenOptions = File.OpenOptions.default): ManagedResource[InputStream] =
+  def inputStream(implicit openOptions: File.OpenOptions = File.OpenOptions.default)
+    : ManagedResource[InputStream] =
     newInputStream(openOptions).autoClosed
 
   def newScanner(implicit config: Scanner.Config = Scanner.Config.default): Scanner =
@@ -337,22 +372,29 @@ class File private(val path: Path) {
   def scanner(implicit config: Scanner.Config = Scanner.Config.default): ManagedResource[Scanner] =
     newScanner(config).autoClosed
 
-  def newOutputStream(implicit openOptions: File.OpenOptions = File.OpenOptions.default): OutputStream =
+  def newOutputStream(
+      implicit openOptions: File.OpenOptions = File.OpenOptions.default): OutputStream =
     Files.newOutputStream(path, openOptions: _*)
 
-  def outputStream(implicit openOptions: File.OpenOptions = File.OpenOptions.default): ManagedResource[OutputStream] =
+  def outputStream(implicit openOptions: File.OpenOptions = File.OpenOptions.default)
+    : ManagedResource[OutputStream] =
     newOutputStream(openOptions).autoClosed
 
-  def newFileChannel(implicit openOptions: File.OpenOptions = File.OpenOptions.default, attributes: File.Attributes = File.Attributes.default): FileChannel =
+  def newFileChannel(implicit openOptions: File.OpenOptions = File.OpenOptions.default,
+                     attributes: File.Attributes = File.Attributes.default): FileChannel =
     FileChannel.open(path, openOptions.toSet, attributes: _*)
 
-  def fileChannel(implicit openOptions: File.OpenOptions = File.OpenOptions.default, attributes: File.Attributes = File.Attributes.default): ManagedResource[FileChannel] =
+  def fileChannel(
+      implicit openOptions: File.OpenOptions = File.OpenOptions.default,
+      attributes: File.Attributes = File.Attributes.default): ManagedResource[FileChannel] =
     newFileChannel(openOptions, attributes).autoClosed
 
-  def newAsynchronousFileChannel(implicit openOptions: File.OpenOptions = File.OpenOptions.default): AsynchronousFileChannel =
+  def newAsynchronousFileChannel(
+      implicit openOptions: File.OpenOptions = File.OpenOptions.default): AsynchronousFileChannel =
     AsynchronousFileChannel.open(path, openOptions: _*)
 
-  def asynchronousFileChannel(implicit openOptions: File.OpenOptions = File.OpenOptions.default): ManagedResource[AsynchronousFileChannel] =
+  def asynchronousFileChannel(implicit openOptions: File.OpenOptions = File.OpenOptions.default)
+    : ManagedResource[AsynchronousFileChannel] =
     newAsynchronousFileChannel(openOptions).autoClosed
 
   def newWatchService: WatchService =
@@ -418,13 +460,18 @@ class File private(val path: Path) {
   def isHidden: Boolean =
     Files.isHidden(path)
 
-  def isLocked(mode: File.RandomAccessMode, position: Long = 0L, size: Long = Long.MaxValue, isShared: Boolean = false): Boolean = {
+  def isLocked(mode: File.RandomAccessMode,
+               position: Long = 0L,
+               size: Long = Long.MaxValue,
+               isShared: Boolean = false): Boolean = {
     val channel = newRandomAccess(mode).getChannel
     try {
       channel.tryLock(position, size, isShared).release()
       false
     } catch {
-      case _: OverlappingFileLockException | _: NonWritableChannelException | _: NonReadableChannelException => true
+      case _: OverlappingFileLockException | _: NonWritableChannelException |
+          _: NonReadableChannelException =>
+        true
     } finally {
       channel.close()
     }
@@ -443,7 +490,8 @@ class File private(val path: Path) {
 
   def entries: Files = list
 
-  def listRecursively(implicit visitOptions: File.VisitOptions = File.VisitOptions.default): Files =
+  def listRecursively(
+      implicit visitOptions: File.VisitOptions = File.VisitOptions.default): Files =
     walk()(visitOptions).filterNot(isSamePathAs)
 
   /**
@@ -452,7 +500,8 @@ class File private(val path: Path) {
     * @param maxDepth
     * @return List of children in BFS maxDepth level deep (includes self since self is at depth = 0)
     */
-  def walk(maxDepth: Int = Int.MaxValue)(implicit visitOptions: File.VisitOptions = File.VisitOptions.default): Files =
+  def walk(maxDepth: Int = Int.MaxValue)(implicit visitOptions: File.VisitOptions =
+                                           File.VisitOptions.default): Files =
     Files.walk(path, maxDepth, visitOptions: _*) //TODO: that ignores I/O errors?
 
   def pathMatcher(syntax: File.PathMatcherSyntax)(pattern: String): PathMatcher =
@@ -463,7 +512,9 @@ class File private(val path: Path) {
     *
     * @return Set of files that matched
     */
-  def glob(pattern: String)(implicit syntax: File.PathMatcherSyntax = File.PathMatcherSyntax.default, visitOptions: File.VisitOptions = File.VisitOptions.default): Files = {
+  def glob(pattern: String)(implicit syntax: File.PathMatcherSyntax =
+                              File.PathMatcherSyntax.default,
+                            visitOptions: File.VisitOptions = File.VisitOptions.default): Files = {
     val matcher = pathMatcher(syntax)(pattern)
     collectChildren(child => matcher.matches(child.path))(visitOptions)
   }
@@ -474,7 +525,8 @@ class File private(val path: Path) {
     * @param matchFilter
     * @return
     */
-  def collectChildren(matchFilter: File => Boolean)(implicit visitOptions: File.VisitOptions = File.VisitOptions.default): Files =
+  def collectChildren(matchFilter: File => Boolean)(implicit visitOptions: File.VisitOptions =
+                                                      File.VisitOptions.default): Files =
     walk()(visitOptions).filter(matchFilter(_))
 
   def fileSystem: FileSystem =
@@ -489,10 +541,12 @@ class File private(val path: Path) {
   def size(implicit visitOptions: File.VisitOptions = File.VisitOptions.default): Long =
     walk()(visitOptions).map(f => Files.size(f.path)).sum
 
-  def permissions(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Set[PosixFilePermission] =
+  def permissions(implicit linkOptions: File.LinkOptions = File.LinkOptions.default)
+    : Set[PosixFilePermission] =
     Files.getPosixFilePermissions(path, linkOptions: _*).toSet
 
-  def permissionsAsString(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): String =
+  def permissionsAsString(
+      implicit linkOptions: File.LinkOptions = File.LinkOptions.default): String =
     PosixFilePermissions.toString(permissions(linkOptions))
 
   def setPermissions(permissions: Set[PosixFilePermission]): this.type = {
@@ -500,16 +554,19 @@ class File private(val path: Path) {
     this
   }
 
-  def addPermission(permission: PosixFilePermission)(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): this.type =
+  def addPermission(permission: PosixFilePermission)(implicit linkOptions: File.LinkOptions =
+                                                       File.LinkOptions.default): this.type =
     setPermissions(permissions(linkOptions) + permission)
 
-  def removePermission(permission: PosixFilePermission)(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): this.type =
+  def removePermission(permission: PosixFilePermission)(implicit linkOptions: File.LinkOptions =
+                                                          File.LinkOptions.default): this.type =
     setPermissions(permissions(linkOptions) - permission)
 
   /**
     * test if file has this permission
     */
-  def apply(permission: PosixFilePermission)(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
+  def apply(permission: PosixFilePermission)(implicit linkOptions: File.LinkOptions =
+                                               File.LinkOptions.default): Boolean =
     permissions(linkOptions)(permission)
 
   def isOwnerReadable(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
@@ -518,7 +575,8 @@ class File private(val path: Path) {
   def isOwnerWritable(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
     this(PosixFilePermission.OWNER_WRITE)(linkOptions)
 
-  def isOwnerExecutable(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
+  def isOwnerExecutable(
+      implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
     this(PosixFilePermission.OWNER_EXECUTE)(linkOptions)
 
   def isGroupReadable(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
@@ -527,7 +585,8 @@ class File private(val path: Path) {
   def isGroupWritable(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
     this(PosixFilePermission.GROUP_WRITE)(linkOptions)
 
-  def isGroupExecutable(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
+  def isGroupExecutable(
+      implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
     this(PosixFilePermission.GROUP_EXECUTE)(linkOptions)
 
   def isOtherReadable(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
@@ -536,7 +595,8 @@ class File private(val path: Path) {
   def isOtherWritable(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
     this(PosixFilePermission.OTHERS_WRITE)(linkOptions)
 
-  def isOtherExecutable(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
+  def isOtherExecutable(
+      implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Boolean =
     this(PosixFilePermission.OTHERS_EXECUTE)(linkOptions)
 
   /**
@@ -554,13 +614,16 @@ class File private(val path: Path) {
   def isExecutable: Boolean =
     toJava.canExecute
 
-  def attributes(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): BasicFileAttributes =
+  def attributes(
+      implicit linkOptions: File.LinkOptions = File.LinkOptions.default): BasicFileAttributes =
     Files.readAttributes(path, classOf[BasicFileAttributes], linkOptions: _*)
 
-  def posixAttributes(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): PosixFileAttributes =
+  def posixAttributes(
+      implicit linkOptions: File.LinkOptions = File.LinkOptions.default): PosixFileAttributes =
     Files.readAttributes(path, classOf[PosixFileAttributes], linkOptions: _*)
 
-  def dosAttributes(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): DosFileAttributes =
+  def dosAttributes(
+      implicit linkOptions: File.LinkOptions = File.LinkOptions.default): DosFileAttributes =
     Files.readAttributes(path, classOf[DosFileAttributes], linkOptions: _*)
 
   def owner(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): UserPrincipal =
@@ -581,19 +644,24 @@ class File private(val path: Path) {
   }
 
   def setGroup(group: String): this.type = {
-    Files.setOwner(path, fileSystem.getUserPrincipalLookupService.lookupPrincipalByGroupName(group))
+    Files
+      .setOwner(path, fileSystem.getUserPrincipalLookupService.lookupPrincipalByGroupName(group))
     this
   }
 
   /**
     * Similar to the UNIX command touch - create this file if it does not exist and set its last modification time
     */
-  def touch(time: Instant = Instant.now())(implicit attributes: File.Attributes = File.Attributes.default, linkOptions: File.LinkOptions = File.LinkOptions.default): this.type = {
-    Files.setLastModifiedTime(createIfNotExists()(attributes, linkOptions).path, FileTime.from(time))
+  def touch(time: Instant = Instant.now())(
+      implicit attributes: File.Attributes = File.Attributes.default,
+      linkOptions: File.LinkOptions = File.LinkOptions.default): this.type = {
+    Files
+      .setLastModifiedTime(createIfNotExists()(attributes, linkOptions).path, FileTime.from(time))
     this
   }
 
-  def lastModifiedTime(implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Instant =
+  def lastModifiedTime(
+      implicit linkOptions: File.LinkOptions = File.LinkOptions.default): Instant =
     Files.getLastModifiedTime(path, linkOptions: _*).toInstant
 
   /**
@@ -632,7 +700,7 @@ class File private(val path: Path) {
     * @return destination
     */
   def copyTo(destination: File, overwrite: Boolean = false): destination.type = {
-    if (isDirectory) {//TODO: maxDepth?
+    if (isDirectory) { //TODO: maxDepth?
       if (overwrite) destination.delete(swallowIOExceptions = true)
       Files.walkFileTree(path, new SimpleFileVisitor[Path] {
         def newPath(subPath: Path): Path = destination.path resolve (path relativize subPath)
@@ -653,19 +721,23 @@ class File private(val path: Path) {
     destination
   }
 
-  def symbolicLinkTo(destination: File)(implicit attributes: File.Attributes = File.Attributes.default): destination.type = {
+  def symbolicLinkTo(destination: File)(implicit attributes: File.Attributes =
+                                          File.Attributes.default): destination.type = {
     Files.createSymbolicLink(path, destination.path, attributes: _*)
     destination
   }
 
-  def linkTo(destination: File, symbolic: Boolean = false)(implicit attributes: File.Attributes = File.Attributes.default): destination.type = {
-    if (symbolic) symbolicLinkTo(destination)(attributes) else {
+  def linkTo(destination: File, symbolic: Boolean = false)(
+      implicit attributes: File.Attributes = File.Attributes.default): destination.type = {
+    if (symbolic) symbolicLinkTo(destination)(attributes)
+    else {
       Files.createLink(path, destination.path)
       destination
     }
   }
 
-  def listRelativePaths(implicit visitOptions: File.VisitOptions = File.VisitOptions.default): Iterator[Path] =
+  def listRelativePaths(
+      implicit visitOptions: File.VisitOptions = File.VisitOptions.default): Iterator[Path] =
     walk()(visitOptions).map(relativize)
 
   def relativize(destination: File): Path =
@@ -744,7 +816,8 @@ class File private(val path: Path) {
     * @param destination The destination file; Creates this if it does not exists
     * @return The destination zip file
     */
-  def zipTo(destination: File, compressionLevel: Int = Deflater.DEFAULT_COMPRESSION)(implicit codec: Codec): destination.type = {
+  def zipTo(destination: File, compressionLevel: Int = Deflater.DEFAULT_COMPRESSION)(
+      implicit codec: Codec): destination.type = {
     val files = if (isDirectory) children.toSeq else Seq(this)
     Cmds.zip(files: _*)(destination, compressionLevel)(codec)
     destination
@@ -779,20 +852,23 @@ class File private(val path: Path) {
     *
     * @return the zip file
     */
-  def unzip()(implicit codec: Codec): File = unzipTo(destination = File.newTemporaryDirectory(name))(codec)
+  def unzip()(implicit codec: Codec): File =
+    unzipTo(destination = File.newTemporaryDirectory(name))(codec)
 
   //TODO: add features from https://github.com/sbt/io/blob/master/io/src/main/scala/sbt/io/IO.scala
 }
 
 object File {
-  def newTemporaryDirectory(prefix: String = "", parent: Option[File] = None)(implicit attributes: Attributes = Attributes.default): File = {
+  def newTemporaryDirectory(prefix: String = "", parent: Option[File] = None)(
+      implicit attributes: Attributes = Attributes.default): File = {
     parent match {
       case Some(dir) => Files.createTempDirectory(dir.path, prefix, attributes: _*)
       case _ => Files.createTempDirectory(prefix, attributes: _*)
     }
   }
 
-  def newTemporaryFile(prefix: String = "", suffix: String = "", parent: Option[File] = None)(implicit attributes: Attributes = Attributes.default): File = {
+  def newTemporaryFile(prefix: String = "", suffix: String = "", parent: Option[File] = None)(
+      implicit attributes: Attributes = Attributes.default): File = {
     parent match {
       case Some(dir) => Files.createTempFile(dir.path, prefix, suffix, attributes: _*)
       case _ => Files.createTempFile(prefix, suffix, attributes: _*)
@@ -825,49 +901,52 @@ object File {
 
   type Attributes = Seq[FileAttribute[_]]
   object Attributes {
-    val default   : Attributes = Seq.empty
+    val default: Attributes = Seq.empty
   }
 
   type CopyOptions = Seq[StandardCopyOption]
   object CopyOptions {
-    def apply(overwrite: Boolean) : CopyOptions = if (overwrite) StandardCopyOption.REPLACE_EXISTING +: default else default
-    val default                   : CopyOptions = Seq.empty //Seq(StandardCopyOption.COPY_ATTRIBUTES)
+    def apply(overwrite: Boolean): CopyOptions =
+      if (overwrite) StandardCopyOption.REPLACE_EXISTING +: default else default
+    val default: CopyOptions = Seq.empty //Seq(StandardCopyOption.COPY_ATTRIBUTES)
   }
 
   type Events = Seq[WatchEvent.Kind[_]]
   object Events {
-    val all     : Events = Seq(StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE)
-    val default : Events = all
+    val all: Events = Seq(StandardWatchEventKinds.ENTRY_CREATE,
+                          StandardWatchEventKinds.ENTRY_MODIFY,
+                          StandardWatchEventKinds.ENTRY_DELETE)
+    val default: Events = all
   }
 
   type OpenOptions = Seq[OpenOption]
   object OpenOptions {
-    val append  : OpenOptions = Seq(StandardOpenOption.APPEND, StandardOpenOption.CREATE)
-    val default : OpenOptions = Seq.empty
+    val append: OpenOptions = Seq(StandardOpenOption.APPEND, StandardOpenOption.CREATE)
+    val default: OpenOptions = Seq.empty
   }
 
   type LinkOptions = Seq[LinkOption]
   object LinkOptions {
-    val follow    : LinkOptions = Seq.empty
-    val noFollow  : LinkOptions = Seq(LinkOption.NOFOLLOW_LINKS)
-    val default   : LinkOptions = follow
+    val follow: LinkOptions = Seq.empty
+    val noFollow: LinkOptions = Seq(LinkOption.NOFOLLOW_LINKS)
+    val default: LinkOptions = follow
   }
 
   type VisitOptions = Seq[FileVisitOption]
   object VisitOptions {
-    val follow    : VisitOptions = Seq(FileVisitOption.FOLLOW_LINKS)
-    val default   : VisitOptions = Seq.empty
+    val follow: VisitOptions = Seq(FileVisitOption.FOLLOW_LINKS)
+    val default: VisitOptions = Seq.empty
   }
 
   type Order = Ordering[File]
   object Order {
-    val bySize              : Order = Ordering.by(_.size)
-    val byName              : Order = Ordering.by(_.name)
-    val byDepth             : Order = Ordering.by(_.path.getNameCount)
-    val byModificationTime  : Order = Ordering.by(_.lastModifiedTime)
-    val byDirectoriesLast   : Order = Ordering.by(_.isDirectory)
-    val byDirectoriesFirst  : Order = byDirectoriesLast.reverse
-    val default             : Order = byDirectoriesFirst
+    val bySize: Order = Ordering.by(_.size)
+    val byName: Order = Ordering.by(_.name)
+    val byDepth: Order = Ordering.by(_.path.getNameCount)
+    val byModificationTime: Order = Ordering.by(_.lastModifiedTime)
+    val byDirectoriesLast: Order = Ordering.by(_.isDirectory)
+    val byDirectoriesFirst: Order = byDirectoriesLast.reverse
+    val default: Order = byDirectoriesFirst
   }
 
   /**
@@ -902,7 +981,7 @@ object File {
     def other(syntax: String) = new PathMatcherSyntax(syntax)
   }
 
-  class RandomAccessMode private(val value: String)
+  class RandomAccessMode private (val value: String)
   object RandomAccessMode {
     val read = new RandomAccessMode("r")
     val readWrite = new RandomAccessMode("rw")
@@ -910,10 +989,11 @@ object File {
     val readWriteContentSynchronous = new RandomAccessMode("rwd")
   }
 
-  def numberOfOpenFileDescriptors(): Long = java.lang.management.ManagementFactory.getOperatingSystemMXBean match {
-    case os: com.sun.management.UnixOperatingSystemMXBean => os.getMaxFileDescriptorCount
-    case os => throw new UnsupportedOperationException(s"Unsupported operating system: $os")
-  }
+  def numberOfOpenFileDescriptors(): Long =
+    java.lang.management.ManagementFactory.getOperatingSystemMXBean match {
+      case os: com.sun.management.UnixOperatingSystemMXBean => os.getMaxFileDescriptorCount
+      case os => throw new UnsupportedOperationException(s"Unsupported operating system: $os")
+    }
 
   /**
     * Implement this interface to monitor the root file
