@@ -964,7 +964,7 @@ object File {
       override def unapply(file: File) = when(file.isRegularFile)(file.newBufferedSource)
     }
 
-    case object Directory extends Type[Files] {
+    case object Directory extends Type[better.files.Files] {
       def unapply(file: File) = when(file.isDirectory)(file.children)
     }
 
