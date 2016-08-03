@@ -19,7 +19,11 @@ package object files extends Implicits {
     if (condition) Some(f) else None
   @inline private[files] def repeat(n: Int)(f: => Unit): Unit = (1 to n).foreach(_ => f)
 
-  private[files] def produce[A](f: => A) = new {
+  abstract class HasTill[A] {
+    def till(hasMore: => Boolean): Iterator[A]
+  }
+
+  private[files] def produce[A](f: => A) = new HasTill[A] {
     def till(hasMore: => Boolean): Iterator[A] = new Iterator[A] {
       override def hasNext = hasMore
       override def next() = f
