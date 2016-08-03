@@ -265,7 +265,9 @@ class FileSpec extends DottyTests {
   test("it should set/unset permissions") {
     assume(isCI)
     import java.nio.file.attribute.PosixFilePermission
-    //an[UnsupportedOperationException] should be thrownBy t1.dosAttributes
+    expect({ case e: UnsupportedOperationException =>}) {
+      t1.dosAttributes
+    }
     t1.permissions()(PosixFilePermission.OWNER_EXECUTE) shouldBe false
 
     chmod_+(PosixFilePermission.OWNER_EXECUTE, t1)
