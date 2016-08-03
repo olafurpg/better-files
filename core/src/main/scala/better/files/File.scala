@@ -285,7 +285,7 @@ class File private (val path: Path) {
 
   def writeBytes(bytes: Iterator[Byte])(implicit openOptions: File.OpenOptions =
                                           File.OpenOptions.default): this.type = {
-    outputStream(openOptions).foreach(_.buffered write bytes)
+    outputStream(openOptions).foreach(x => OutputStreamOps(x.buffered).write(bytes))
     this
   }
 
