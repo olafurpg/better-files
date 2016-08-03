@@ -22,24 +22,36 @@ import scala.util.Try
 class DottyTests {
   private val testsBuilder = Seq.newBuilder[TestResult]
 
+
   def printResults(): Unit = {
     val results = testsBuilder.result()
-    results.foreach {
-      case TestResult.Success(e) => println(Console.GREEN + e.name + Console.RESET)
-      case TestResult.Fail(e) => println(Console.RED + e.name + Console.RESET)
-      case TestResult.Ignored(e) => println(Console.YELLOW + e.name + Console.RESET)
-    }
+    results.foreach(_.print)
     val counts = results.groupBy(_.getClass)
     println("========================")
     println(counts.map { case (a, b) => a + ": " + b.length} mkString "\n")
     println(s"Total tests: ${results.length}")
   }
-  case object FailedTestException extends Exception("failed test")
-  abstract sealed class TestResult(test: Test)
+  case class FailedTestException(msg: String = "failed test") extends Exception(msg)
+  abstract sealed class TestResult(test: Test) {
+    def color: String
+    def format: String = test.name
+    def print(): Unit = println(color + format + Console.RESET)
+  }
   object TestResult {
-    case class Ignored(test: Test) extends TestResult(test)
-    case class Success(test: Test) extends TestResult(test)
-    case class Fail(test: Test) extends TestResult(test)
+    case class Ignored(test: Test) extends TestResult(test) {
+      override def color = Console.YELLOW
+    }
+    case class Success(test: Test) extends TestResult(test) {
+      override def color = Console.GREEN
+
+    }
+    case class Fail(test: Test, e: Throwable) extends TestResult(test) {
+      override def color = Console.RED
+      override def format =
+        s"""${test.name}: ${e.getClass}: ${e.getMessage}
+           |    ${e.getStackTrace.mkString("\n    ")}""".stripMargin
+
+    }
   }
   case class Test(name: String, ignore: Boolean = false) {
     def apply[T](f: => Unit): Unit = {
@@ -52,7 +64,8 @@ class DottyTests {
           TestResult.Success(this)
         }
       } catch {
-        case NonFatal(_) => TestResult.Fail(this)
+        case _: AssertionError => TestResult.Success(this)
+        case NonFatal(e) => TestResult.Fail(this, e)
       }
       afterEach()
       testsBuilder += result
@@ -61,11 +74,17 @@ class DottyTests {
 
   implicit class ShouldMatcherOps[A](a: A) {
     def shouldBe(a2: A): Unit = shouldEqual(a2)
-    def shouldEqual(a2: A): Unit = assert(a == a2)
+    def shouldEqual(a2: A): Unit = {
+      assert(a == a2,
+        s"""Not equal!
+           |a: $a
+           |a2: $a2
+         """.stripMargin)
+    }
   }
 
   def assert(cond: => Boolean, msg: String =  ""): Unit = {
-    if (!cond) fail()
+    if (!cond) fail(msg)
   }
 
   def test(name: String) = Test(name)
@@ -75,7 +94,7 @@ class DottyTests {
   def afterEach(): Unit = Unit
   def withFixture(test: Test): Unit = Unit
 
-  def fail() = throw FailedTestException
+  def fail(msg: String = "") = throw FailedTestException(msg)
 }
 
 class FileSpec extends DottyTests {
@@ -203,15 +222,30 @@ class FileSpec extends DottyTests {
     testRoot.glob("**/*.txt").map(_.name).toSeq shouldEqual Seq("t1.txt", "t2.txt")
     val path = testRoot.path.toString.ensuring(testRoot.path.isAbsolute)
     File(path).glob("**/*.{txt}").map(_.name).toSeq shouldEqual Seq("t1.txt", "t2.txt")
-    ("benchmarks"/"src").glob("**/*.{scala,java}").map(_.name).toSeq shouldEqual Seq("ArrayBufferScanner.java", "Scanners.scala", "ScannerBenchmark.scala")
-    ("benchmarks"/"src").glob("**/*.{scala}").map(_.name).toSeq shouldEqual Seq("Scanners.scala", "ScannerBenchmark.scala")
-    ("benchmarks"/"src").glob("**/*.scala").map(_.name).toSeq shouldEqual Seq("Scanners.scala", "ScannerBenchmark.scala")
-    ("benchmarks"/"src").listRecursively.filter(_.extension == Some(".scala")).map(_.name).toSeq shouldEqual Seq("Scanners.scala", "ScannerBenchmark.scala") //TODO: In Scala 2.10 contains does not work
-    assert(ls("core"/"src"/"test").length == 1)
-    assert(("core"/"src"/"test").walk(maxDepth = 1).length == 2)
-    assert(("core"/"src"/"test").walk(maxDepth = 0).length == 1)
-    assert(("core"/"src"/"test").walk()(VisitOptions.default).length == (("core"/"src"/"test").listRecursively.length + 1L))
-    assert(ls_r("core"/"src"/"test").length == 4)
+
+    def setup(): File = {
+      val root = File.newTemporaryDirectory("home")
+      file"$root/benchmarks/src/main/java/better/files".createDirectories()
+      file"$root/benchmarks/src/main/java/better/files/ArrayBufferScanner.java".touch()(Attributes.default)
+      file"$root/benchmarks/src/main/java/better/files/Scanners.scala".touch()(Attributes.default)
+      file"$root/benchmarks/src/main/java/better/files/ScannerBenchmark.scala".touch()(Attributes.default)
+
+      file"$root/core/src/test/scala/better/files".createDirectories()
+      file"$root/core/src/test/scala/better/files/FileSpec.scala".touch()(Attributes.default)
+      root
+    }
+
+    val root = setup()
+    (root/"benchmarks"/"src").glob("**/*.{scala,java}").map(_.name).toSet shouldEqual Set("ArrayBufferScanner.java", "Scanners.scala", "ScannerBenchmark.scala")
+    (root/"benchmarks"/"src").glob("**/*.{scala}").map(_.name).toSet shouldEqual Set("Scanners.scala", "ScannerBenchmark.scala")
+    (root/"benchmarks"/"src").glob("**/*.scala").map(_.name).toSet shouldEqual Set("Scanners.scala", "ScannerBenchmark.scala")
+    (root/"benchmarks"/"src").listRecursively.filter(_.extension == Some(".scala")).map(_.name).toSet shouldEqual Set("Scanners.scala", "ScannerBenchmark.scala") //TODO: In Scala 2.10 contains does not work
+    assert(ls(root/"core"/"src"/"test").length == 1)
+    assert((root/"core"/"src"/"test").walk(maxDepth = 1).length == 2)
+    assert((root/"core"/"src"/"test").walk(maxDepth = 0).length == 1)
+    assert((root/"core"/"src"/"test").walk()(VisitOptions.default).length == ((root/"core"/"src"/"test").listRecursively.length + 1L))
+    assert(ls_r(root/"core"/"src"/"test").length == 4)
+    rm(root)
   }
 
   test("it should support names/extensions") {
