@@ -171,7 +171,7 @@ trait Implicits {
       add(file, file.name)
   }
 
-  implicit class CloseableOps[A <: Closeable](resource: A) {
+  implicit class CloseableOps[A](resource: A)(implicit ev: CanClose[A]) {
 
     /**
       * Lightweight automatic resource management
@@ -192,7 +192,7 @@ trait Implicits {
           f(resource)
         } finally {
           if (!isClosed) {
-            resource.close()
+            ev.close(resource)
             isClosed = true
           }
         }
@@ -220,7 +220,7 @@ trait Implicits {
 
       def close() =
         try {
-          if (!isClosed) resource.close()
+          if (!isClosed) ev.close(resource)
         } finally {
           isClosed = true
         }
