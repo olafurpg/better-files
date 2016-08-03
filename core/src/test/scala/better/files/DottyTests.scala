@@ -10,7 +10,7 @@ class DottyTests {
 
   def printResults(): Unit = {
     val results = testsBuilder.result()
-    results.foreach(_.print)
+    results.foreach(_.print())
     val counts = results.groupBy(_.getClass)
     println("========================")
     println(counts.map { case (a, b) => a + ": " + b.length } mkString "\n")
@@ -62,9 +62,9 @@ class DottyTests {
     def shouldEqual(a2: A): Unit = {
       assert(a == a2,
              s"""Not equal!
-           |a: $a
-           |a2: $a2
-         """.stripMargin)
+                |a: $a
+                |a2: $a2
+              """.stripMargin)
     }
   }
 
@@ -78,8 +78,6 @@ class DottyTests {
       throw FailedTestException("expected error but no error happened")
     } catch handleError
   }
-
-
 
   def test(name: String) = Test(name)
   def ignore(name: String) = Test(name, ignore = true)
