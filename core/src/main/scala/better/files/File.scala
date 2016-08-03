@@ -144,7 +144,7 @@ class File private (val path: Path) {
   def isSiblingOf(sibling: File): Boolean =
     sibling isChildOf parent
 
-  def siblings: Files =
+  def siblings: better.files.Files =
     parent.list.filterNot(_ == this)
 
   def isChildOf(parent: File): Boolean =
@@ -483,15 +483,15 @@ class File private (val path: Path) {
   def isWriteLocked(position: Long = 0L, size: Long = Long.MaxValue, isShared: Boolean = false) =
     isLocked(File.RandomAccessMode.readWrite, position, size, isShared)
 
-  def list: Files =
+  def list: better.files.Files =
     Files.list(path)
 
-  def children: Files = list
+  def children: better.files.Files = list
 
-  def entries: Files = list
+  def entries: better.files.Files = list
 
   def listRecursively(
-      implicit visitOptions: File.VisitOptions = File.VisitOptions.default): Files =
+      implicit visitOptions: File.VisitOptions = File.VisitOptions.default): better.files.Files =
     walk()(visitOptions).filterNot(isSamePathAs)
 
   /**
@@ -501,7 +501,7 @@ class File private (val path: Path) {
     * @return List of children in BFS maxDepth level deep (includes self since self is at depth = 0)
     */
   def walk(maxDepth: Int = Int.MaxValue)(implicit visitOptions: File.VisitOptions =
-                                           File.VisitOptions.default): Files =
+                                           File.VisitOptions.default): better.files.Files =
     Files.walk(path, maxDepth, visitOptions: _*) //TODO: that ignores I/O errors?
 
   def pathMatcher(syntax: File.PathMatcherSyntax)(pattern: String): PathMatcher =
@@ -514,7 +514,7 @@ class File private (val path: Path) {
     */
   def glob(pattern: String)(implicit syntax: File.PathMatcherSyntax =
                               File.PathMatcherSyntax.default,
-                            visitOptions: File.VisitOptions = File.VisitOptions.default): Files = {
+                            visitOptions: File.VisitOptions = File.VisitOptions.default): better.files.Files = {
     val matcher = pathMatcher(syntax)(pattern)
     collectChildren(child => matcher.matches(child.path))(visitOptions)
   }
@@ -526,7 +526,7 @@ class File private (val path: Path) {
     * @return
     */
   def collectChildren(matchFilter: File => Boolean)(implicit visitOptions: File.VisitOptions =
-                                                      File.VisitOptions.default): Files =
+                                                      File.VisitOptions.default): better.files.Files =
     walk()(visitOptions).filter(matchFilter(_))
 
   def fileSystem: FileSystem =
