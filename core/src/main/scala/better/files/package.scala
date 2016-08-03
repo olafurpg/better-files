@@ -79,7 +79,7 @@ package object files extends Implicits {
 //  }
 
 
-  type ManagedResource[A <: Closeable] = Traversable[A]
+  type ManagedResource[A] = Traversable[A]
 
   // Some utils:
   private[files] def newMultiMap[A, B]: mutable.MultiMap[A, B] =
