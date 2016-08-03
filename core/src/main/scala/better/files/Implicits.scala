@@ -1,6 +1,7 @@
 package better.files
 
 import java.io.{File => JFile, _}, StreamTokenizer.{TT_EOF => eof}
+import better.files.File
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.charset.Charset
