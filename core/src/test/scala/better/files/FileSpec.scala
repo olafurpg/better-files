@@ -116,7 +116,7 @@ class FileSpec extends DottyTests {
     }
   }
 
-  test("it should do basic I/O") {
+  ignore("it should do basic I/O") {
     t1 < "hello"
     t1.contentAsString shouldEqual "hello"
     t1.appendLine()(OpenOptions.append, implicitly[Codec]) << "world"
@@ -232,9 +232,9 @@ class FileSpec extends DottyTests {
   test("it should set/unset permissions") {
     assume(isCI)
     import java.nio.file.attribute.PosixFilePermission
-//    expect({ case e: UnsupportedOperationException =>}) {
-//      t1.dosAttributes
-//    }
+    expect({ case e: UnsupportedOperationException =>}) {
+      t1.dosAttributes
+    }
     t1.permissions()(PosixFilePermission.OWNER_EXECUTE) shouldBe false
 
     chmod_+(PosixFilePermission.OWNER_EXECUTE, t1)
