@@ -57,7 +57,7 @@ object Scanner {
     */
   case class Config(delimiter: String, includeDelimiters: Boolean)(implicit val codec: Codec)
   object Config {
-    implicit val default = Config(delimiter = Delimiters.whitespaces, includeDelimiters = false)
+    implicit val default: Config  = Config(delimiter = Delimiters.whitespaces, includeDelimiters = false)
 
     object Delimiters {
       val lines = "\n\r"

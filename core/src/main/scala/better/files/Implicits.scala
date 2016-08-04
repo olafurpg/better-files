@@ -1,6 +1,7 @@
 package better.files
 
 import java.io.{File => JFile, _}, StreamTokenizer.{TT_EOF => eof}
+import better.files.File
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.charset.Charset
@@ -170,7 +171,7 @@ trait Implicits {
       add(file, file.name)
   }
 
-  implicit class CloseableOps[A <: Closeable](resource: A) {
+  implicit class CloseableOps[A](resource: A)(implicit ev: CanClose[A]) {
 
     /**
       * Lightweight automatic resource management
@@ -191,7 +192,7 @@ trait Implicits {
           f(resource)
         } finally {
           if (!isClosed) {
-            resource.close()
+            ev.close(resource)
             isClosed = true
           }
         }
@@ -219,7 +220,7 @@ trait Implicits {
 
       def close() =
         try {
-          if (!isClosed) resource.close()
+          if (!isClosed) ev.close(resource)
         } finally {
           isClosed = true
         }
@@ -270,4 +271,7 @@ trait Implicits {
 
   private[files] implicit def pathStreamToFiles(files: JStream[Path]): Files =
     files.toAutoClosedIterator.map(File.apply)
+
+
+
 }

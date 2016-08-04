@@ -2,14 +2,11 @@ package better
 
 import scala.collection.mutable
 
-package object files extends Implicits {
+package object files extends Implicits with DottyImplicits {
   type Files = Iterator[File]
 
-  type Closeable = {
-    def close(): Unit
-  }
-
-  type ManagedResource[A <: Closeable] = Traversable[A]
+  // TODO(olafur): Contrain A to Closeable
+  type ManagedResource[A] = Traversable[A]
 
   // Some utils:
   private[files] def newMultiMap[A, B]: mutable.MultiMap[A, B] =
@@ -19,7 +16,7 @@ package object files extends Implicits {
     if (condition) Some(f) else None
   @inline private[files] def repeat(n: Int)(f: => Unit): Unit = (1 to n).foreach(_ => f)
 
-  private[files] def produce[A](f: => A) = new {
+  private[files] def produce[A](f: => A) = new HasTill[A] {
     def till(hasMore: => Boolean): Iterator[A] = new Iterator[A] {
       override def hasNext = hasMore
       override def next() = f

@@ -14,7 +14,7 @@ lazy val commonSettings = Seq(
     "-language:implicitConversions",
     "-language:reflectiveCalls",
     "-unchecked",
-    "-Xfatal-warnings",
+//    "-Xfatal-warnings",
     "-Xlint",
     "-Yinline-warnings",
     "-Yno-adapted-args",
