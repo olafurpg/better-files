@@ -116,7 +116,7 @@ class FileSpec extends DottyTests {
     }
   }
 
-  ignore("it should do basic I/O") {
+  test("it should do basic I/O") {
     t1 < "hello"
     t1.contentAsString shouldEqual "hello"
     t1.appendLine()(OpenOptions.append, implicitly[Codec]) << "world"
